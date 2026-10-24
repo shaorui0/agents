@@ -69,8 +69,8 @@ flowchart TD
 |---|---|---|---|---|
 | 1 | Skill | Explicit user approval; without it the command stays in `report.md` | The human owns every irreversible action | Advised |
 | 2 | `settings.json` | Static allow and deny tables | Fastest, coarsest filter | Enforced by the host |
-| 3 | `hooks/k8s_gate.sh` | Alias to environment tier, hard-block table, mutating-verb detection, `# INTENT:` reminder. **An alias not in the map is treated as production (fail-closed).** PROD + mutating exits 2 and prints the command. | The layer the model cannot route around. Hallucination stops being a safety risk. | **Enforced** |
-| 4 | Skill + audit | After a mutation: `rollout status` + `get`, or `helm status`. Failed or ambiguous verification stops all further changes. | A command that ran is not a command that worked | Advised; `audit_log.sh` records the reminder |
+| 3 | `hooks/k8s_gate.sh` (policy in `config/env_map.yaml`, tests in `tests/test_gate.py`) | Alias to environment tier, hard-block table, mutating-verb detection, `# INTENT:` reminder. **An alias not in the map is treated as production (fail-closed).** PROD + mutating exits 2 and prints the command. | The layer the model cannot route around. Hallucination stops being a safety risk. | **Enforced** |
+| 4 | Skill + `hooks/audit_log.sh` | After a mutation: `rollout status` + `get`, or `helm status`. Failed or ambiguous verification stops all further changes. | A command that ran is not a command that worked | Advised; `audit_log.sh` records the reminder |
 
 Gate 3 policy by tier:
 
@@ -81,7 +81,7 @@ Gate 3 policy by tier:
 | dev | pass | pass, INTENT required | warn | pass |
 | any tier | hard-block table: delete namespace, delete persistent volume, `--all` / all-namespaces deletes, IAM mutations, instance terminate, explicit `--context prod` | | | |
 
-Known limit: a verb deny-list is fail-open for verbs it has never seen. Gate 3 therefore lists a wide verb set (including `set`, `replace`, `edit`, `annotate`, `label`, `rollout undo`), and Gate 2 plus the audit log are the second line. Compound commands (`&&`, `;`, `|`, newlines) are split and the strictest segment wins; shell indirection such as `bash -c "..."` is not parsed.
+Known limit: a verb deny-list is fail-open for verbs it has never seen. Gate 3 therefore lists a wide verb set (including `set`, `replace`, `edit`, `annotate`, `label`, `rollout undo`), and Gate 2 plus the audit log are the second line. Compound commands (`&&`, `;`, `|`, newlines) are split and the strictest segment wins; `bash -c "..."` and `eval` are unwrapped (up to three levels); an unparseable command that names an infra tool is treated as a prod mutation. Anything fancier (aliases defined in a shell function, a script file that calls kubectl) is not seen by Gate 3; that is what Gate 2 and the audit trail are for.
 
 ## Knowledge compounding
 
