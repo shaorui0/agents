@@ -15,7 +15,7 @@ Make the SRE oncall triage skill a public, checkable example of harness engineer
 | R5 | A triage report is checkable by exit code: required sections, evidence per conclusion, no over-assertion in the reply, mutating commands carry INTENT. | Every real oncall is an eval run |
 | R6 | Gates and verifier have tests that run without any cluster, credentials or network. | Anyone can clone and run |
 | R7 | Every change is an OpenSpec change with staged commits, an evidence file with raw command output, an HTML report and a blog note. | Process is part of the deliverable |
-| R8 | Pre-existing public content (`knowledge/`, `facets/`, `skills/`) is not rewritten or deleted by this work. | It was already published; history is not edited |
+| R8 | The repository has zero leak-pattern hits in every file and every commit it publishes; earlier snapshots that contained internal identifiers were replaced by a rebuilt, generalized history (c0004). | A public repo about data boundaries must not contain the data |
 | R9 | Public by default: the repo never contains internal identifiers. | See data boundary |
 
 ## 3. Deliverables
@@ -26,7 +26,7 @@ Make the SRE oncall triage skill a public, checkable example of harness engineer
 | D2 | `hooks/k8s_gate.sh` + `config/env_map.yaml` + `hooks/audit_pre.sh` + `hooks/audit_log.sh` | `make test` green; PROD scale exits 2 and prints the command | R2 R3 R4 R6 |
 | D3 | `tools/verify.py` + `fixtures/report_ok.md` + `fixtures/report_bad.md` | ok fixture exits 0, bad fixture exits 2 | R5 R6 |
 | D4 | `.claude/skills/agents-change-loop/SKILL.md`, README Progress table | One row per change | R7 |
-| D5 | Leak scan | New files: 0 hits; legacy hits listed, not edited | R8 R9 |
+| D5 | Leak scan | Every file: 0 hits, no exemptions | R8 R9 |
 
 ## 4. Data boundary
 
@@ -38,7 +38,7 @@ These classes of data must never enter this repository, in code, config, fixture
 - audit logs and investigation records (`records/audit/*.jsonl` is gitignored; fixtures are synthetic);
 - credentials, account numbers, local home paths.
 
-Enforcement: `.leak_patterns.local` (gitignored, so the repo never contains the words it guards against) is read by `tools/check_rules.py` together with generic patterns. Files added after the base commit must have zero hits. Legacy files that predate this work are scanned and listed but not modified, because they were already public and this work does not rewrite history.
+Enforcement: `.leak_patterns.local` (gitignored, so the repo never contains the words it guards against) is read by `tools/check_rules.py` together with generic patterns. Every file must have zero hits; there is no exemption by age or origin. History that predated the scan was rebuilt in c0004: identifiers were replaced class-for-class (same original, same replacement, meaning unchanged) and the old history is kept only in a local, never-pushed backup branch.
 
 Reference implementations used while writing the gates were studied for behaviour only; no identifier, table or message text was copied.
 

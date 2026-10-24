@@ -28,7 +28,7 @@ description: 本仓库每个改动的固定闭环：OpenSpec change → 实现 �
 
 - 给用户看的 markdown 同时出 HTML。
 - 公司数据（集群别名、环境映射、内部域名、客户名、工单号、审计日志）不进仓库；提交前 `python3 tools/check_rules.py` 必须 OK，再 `git diff --cached` 扫一遍。
-- 旧文件（base commit 之前已公开的 knowledge/ facets/ skills/）不改写；泄漏扫描命中只列出，不动。
+- 泄漏扫描没有豁免：全仓任何文件命中都算失败（历史已在 c0004 重建并泛化）；改写标识时同一原值映射到同一替代值，语义不变。
 - commit 末尾加 `Co-Authored-By` 行；只 `git add` 具体文件。
 - 报告里的每个数字要能指回 evidence 或数据行。
 - 涉及变更类命令（kubectl/helm/aws 写操作）的 change 必须在 proposal 写明经过哪几道 gate 和回滚。

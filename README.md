@@ -75,7 +75,7 @@ reports/ notes/blog/  per-change HTML report and blog notes
 
 ## Not published
 
-The full-fidelity incident write-ups (top-level `cases/`, `runbooks/`), runtime tools with audit logs, and investigation records (`records/`) are not published: they contain concrete production details and customer identifiers. `knowledge/cases/` and `knowledge/runbooks/` hold the earlier, already-public sanitized material; a leak scan over it found residual internal identifiers, listed in `openspec/changes/c0001-requirements-and-method/evidence.md` and deliberately left unedited by this work. This repository otherwise ships structure, method, gates and tests. See the data boundary in `docs/REQUIREMENTS.md`.
+The full-fidelity incident write-ups (top-level `cases/`, `runbooks/`), runtime tools with audit logs, and investigation records (`records/`) are not published: they contain concrete production details and customer identifiers. `knowledge/cases/` and `knowledge/runbooks/` hold sanitized material. On 2026-10-24 the history was rebuilt and the internal identifiers that earlier snapshots contained (cluster aliases and names, ticket ids, internal paths) were generalized; the whole repository now scans at zero hits with no exemptions (`python3 tools/check_rules.py`). See the data boundary in `docs/REQUIREMENTS.md` and change c0004.
 
 ## Progress
 
