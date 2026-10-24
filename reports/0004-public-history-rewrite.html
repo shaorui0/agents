@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>c0004 public-history-rewrite</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">c0004 public-history-rewrite</h1>
+</header>
+<h1 id="c0004-public-history-rewrite">c0004 public-history-rewrite</h1>
+<h2 id="what-changed">What changed</h2>
+<ul>
+<li>History rebuilt locally. The pre-existing public content, with
+internal identifiers generalized, is one root commit; the 16 process
+commits of c0001-c0003 replay on top with identical content. All commits
+carry one author and committer email.</li>
+<li><code>tools/check_rules.py</code>: no legacy exemption. Every file
+is scanned; any hit fails.</li>
+<li>README and <code>docs/REQUIREMENTS.md</code> (R8, D5, data boundary)
+now say the history was rebuilt and identifiers generalized.</li>
+<li>Backup: local branch <code>pre-public-history</code> (never pushed).
+Rollback is <code>git reset --hard pre-public-history</code>.</li>
+</ul>
+<h2 id="why">Why</h2>
+<p>c0001 found internal identifiers in content that was already public
+and chose to report, not rewrite. A repo that teaches fail-closed and a
+data boundary should pass its own scan with no exemptions, and an
+exemption for “old files” is debt that never gets paid.</p>
+<h2 id="how-the-rewrite-was-done">How the rewrite was done</h2>
+<ul>
+<li>Replacement is class-for-class and consistent: the same original
+maps to the same substitute everywhere, so cross-references in the prose
+still line up and meaning is unchanged. Cluster aliases become example
+prod aliases, cluster full names become generic region-style names
+(region facts in the prose are kept), ticket ids become
+<code>TICKET-n</code>, the workspace domain becomes a placeholder
+subdomain, home paths become <code>~/</code>, the work-repo path and ops
+directory become placeholders.</li>
+<li>A manual review beyond the pattern list found two more categories
+the patterns had missed (cloud cluster names, an ops-directory name).
+The pattern set was extended so the scan now covers them.</li>
+<li><code>git rebase --onto</code> replayed the 16 commits with no
+conflicts, then <code>--reset-author</code> per commit unified the
+identity.</li>
+</ul>
+<h2 id="result">Result</h2>
+<p>Before (extended patterns, backup branch): 49 hit lines in 13 files.
+After: 0, no exemptions. One author email across all commits. Tests
+green. Evidence lists categories and counts only.</p>
+<h2 id="caveat">Caveat</h2>
+<p>Hashes of c0001-c0003 changed, and this is local only. Until the
+rebuilt branch is pushed, the old history remains whatever was already
+published; replacing the public history is a force-push decision left to
+the owner.</p>
+<h2 id="evidence">Evidence</h2>
+<h2
+id="a-before-scan-the-backup-branch-with-its-own-old-tool-extended-patterns-first-line-only">4.1a
+BEFORE: scan the backup branch with its own old tool, extended patterns
+(first line only)</h2>
+<pre><code>$ W=$(mktemp -d)/old; git worktree add -q $W pre-public-history &amp;&amp; cp .leak_patterns.local $W/ &amp;&amp; python3 $W/tools/check_rules.py $W --list-legacy | head -1; git worktree remove --force $W
+legacy leak hits (reported, not modified): 49 lines in 13 files
+[exit=0]</code></pre>
+<h2 id="b-after-current-tree-no-exemptions">4.1b AFTER: current tree, no
+exemptions</h2>
+<pre><code>$ python3 tools/check_rules.py --list-legacy
+legacy leak hits: 0 (no exemptions; all files scanned)
+check_rules: OK
+[exit=0]</code></pre>
+<h2 id="c-reading-the-numbers">4.1c Reading the numbers</h2>
+<ul>
+<li>c0001 evidence recorded 36 hit lines in 11 files with the original
+pattern set. The 4.1a scan uses the pattern set as extended in this
+change (adds real cloud cluster names and an ops-directory name), which
+found 13 more lines in 2 more files: 49 lines in 13 files.</li>
+<li>Categories: cluster aliases, ticket ids, internal work-repo path,
+local home path, workspace domain, cloud cluster names, ops-directory
+name.</li>
+<li>After the rewrite: 0 (4.1b).</li>
+</ul>
+<h2 id="a-author-and-committer-emails-one-address-expected">4.2a author
+and committer emails (one address expected)</h2>
+<pre><code>$ git log --format=&#39;%ae%n%ce&#39; | sort -u
+sr1054461216@163.com
+[exit=0]</code></pre>
+<h2 id="b-commit-count">4.2b commit count</h2>
+<pre><code>$ git log --oneline | wc -l
+      21
+[exit=0]</code></pre>
+<h2 id="c-backup-branch-exists">4.2c backup branch exists</h2>
+<pre><code>$ git branch --list pre-public-history
+  pre-public-history
+[exit=0]</code></pre>
+<h2 id="d-make-test">4.2d make test</h2>
+<pre><code>$ make test
+python3 -m unittest discover -s tools -p &#39;test_*.py&#39;
+.....
+----------------------------------------------------------------------
+Ran 5 tests in 0.000s
+
+OK
+python3 -W ignore -m unittest discover -s tests -t . -p &#39;test_*.py&#39;
+................................................
+----------------------------------------------------------------------
+Ran 48 tests in 5.063s
+
+OK
+[exit=0]</code></pre>
+<h2 id="e-root-commit">4.2e root commit</h2>
+<pre><code>$ git log --reverse --format=&#39;%h %s&#39; | head -1
+4dde8f1 init: public snapshot, internal identifiers generalized
+[exit=0]</code></pre>
+<h2 id="openspec-validate">4.3 openspec validate</h2>
+<pre><code>$ openspec validate c0004-public-history-rewrite
+Change &#39;c0004-public-history-rewrite&#39; is valid
+[exit=0]</code></pre>
+</body>
+</html>
