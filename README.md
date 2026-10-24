@@ -44,3 +44,4 @@ knowledge/            方法论层
 | Change | Date | What | Takeaway | Links |
 |---|---|---|---|---|
 | c0001-requirements-and-method | 2026-10-24 | Model (METHOD), requirements and data boundary, change-loop skill, leak-scan tool | Label every safety claim enforced or advised; only an exit code is safety | [report](reports/0001-requirements-and-method.html) · [note](notes/blog/0001-requirements-and-method.md) |
+| c0002-deterministic-gates | 2026-10-24 | Gate 3 (`k8s_gate`) with fail-closed tiers and hard blocks, audit pre/post pair, settings example, 37 tests | The gate is the one layer the model cannot negotiate with; fail-closed is a default, not a feature | [report](reports/0002-deterministic-gates.html) · [note](notes/blog/0002-deterministic-gates.md) |

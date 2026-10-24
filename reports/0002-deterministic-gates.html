@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>c0002 deterministic-gates</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">c0002 deterministic-gates</h1>
+</header>
+<h1 id="c0002-deterministic-gates">c0002 deterministic-gates</h1>
+<h2 id="what-changed">What changed</h2>
+<ul>
+<li><code>hooks/k8s_gate.sh</code> (+ <code>k8s_gate.py</code>,
+<code>config/env_map.yaml</code>): Gate 3 as runnable code. Alias to
+tier (dev / staging / prod), a hard-block table that applies on every
+tier, mutating-verb detection on the first non-flag token (so
+<code>kprod -n y scale ...</code> is caught), <code># INTENT:</code>
+reminder, <code>--dry-run</code> allowed, compound commands and
+<code>bash -c</code> unwrapped.</li>
+<li><code>hooks/audit_pre.sh</code>, <code>hooks/audit_log.sh</code>,
+<code>hooks/audit.py</code>: JSONL audit under
+<code>records/audit/</code> (path from <code>AGENTS_AUDIT_DIR</code>),
+pre and post paired by <code>op_id</code>, <code>reasoning: null</code>
+when INTENT is missing, Gate 4 reminder after a mutation.</li>
+<li><code>.claude/settings.example.json</code>: Gate 2 table and the
+hook wiring.</li>
+<li><code>tests/</code>: 37 tests, no cluster, no network.</li>
+</ul>
+<h2 id="why">Why</h2>
+<p>The method says safety lives in deterministic code. Until a reader
+can run the code and try to break it, that is a claim. The point of Gate
+3 is the property “no amount of hallucination gets past an exit 2”.</p>
+<h2 id="design-decisions">Design decisions</h2>
+<ul>
+<li><strong>Fail-closed on three axes.</strong> Unknown alias is prod.
+Missing config exits 2. Non-JSON stdin exits 2. An unparseable command
+that names an infra tool is treated as a prod mutation.</li>
+<li><strong>Verb by position, not by substring.</strong> A deny-list
+regex over the whole string misses <code>kprod -n y scale</code> and
+false-positives on <code>get pods -l app=create</code>. Tokenising and
+finding the first non-flag token fixes both.</li>
+<li><strong>Hard blocks beat dry-run and tier.</strong>
+<code>kdev delete ns foo --dry-run=client</code> still exits 2.</li>
+<li><strong>Gate never blocks the audit.</strong> audit hooks always
+exit 0; a blocked prod command is still recorded as
+<code>phase=pre</code> with <code>action: block</code>.</li>
+</ul>
+<h2 id="result">Result</h2>
+<p><code>echo '{"tool_input":{"command":"kprod scale deploy x --replicas=1 -n y"}}' | bash hooks/k8s_gate.sh</code>
+exits 2 and prints the command. 37 tests green. Unknown alias, hard
+blocks, INTENT reminder, dry-run, compound commands all covered.</p>
+<h2 id="known-limit">Known limit</h2>
+<p>A verb deny-list is fail-open for verbs it has not seen. The set is
+wide (includes <code>set</code>, <code>replace</code>,
+<code>edit</code>, <code>annotate</code>, <code>label</code>), but the
+second line is Gate 2 plus the audit trail. Scripts that call kubectl
+internally are invisible to Gate 3.</p>
+<h2 id="evidence">Evidence</h2>
+<p>Raw output from
+<code>openspec/changes/c0002-deterministic-gates/evidence.md</code>.</p>
+<h2 id="make-test">4.1 make test</h2>
+<pre><code>$ make test
+python3 -m unittest discover -s tools -p &#39;test_*.py&#39;
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK
+python3 -W ignore -m unittest discover -s tests -t . -p &#39;test_*.py&#39;
+.....................................
+----------------------------------------------------------------------
+Ran 37 tests in 4.836s
+
+OK
+[exit=0]</code></pre>
+<h2 id="b-gate-tests-verbose">4.1b gate tests, verbose</h2>
+<pre><code>$ python3 -W ignore -m unittest tests.test_gate -v
+test_classify_reports_null_reasoning (tests.test_gate.CompoundAndNonInfra.test_classify_reports_null_reasoning) ... ok
+test_compound_strictest_segment_wins (tests.test_gate.CompoundAndNonInfra.test_compound_strictest_segment_wins) ... ok
+test_custom_config_changes_tiers (tests.test_gate.CompoundAndNonInfra.test_custom_config_changes_tiers) ... ok
+test_env_prefix_and_wrapper (tests.test_gate.CompoundAndNonInfra.test_env_prefix_and_wrapper) ... ok
+test_non_bash_tool_ignored (tests.test_gate.CompoundAndNonInfra.test_non_bash_tool_ignored) ... ok
+test_non_infra_commands_pass (tests.test_gate.CompoundAndNonInfra.test_non_infra_commands_pass) ... ok
+test_shell_indirection_one_level (tests.test_gate.CompoundAndNonInfra.test_shell_indirection_one_level) ... ok
+test_bare_kubectl_mutating_blocked (tests.test_gate.FailClosed.test_bare_kubectl_mutating_blocked) ... ok
+test_garbage_stdin_exits_2 (tests.test_gate.FailClosed.test_garbage_stdin_exits_2) ... ok
+test_missing_config_exits_2 (tests.test_gate.FailClosed.test_missing_config_exits_2) ... ok
+test_unbalanced_quotes_on_infra_command_fail_closed (tests.test_gate.FailClosed.test_unbalanced_quotes_on_infra_command_fail_closed) ... ok
+test_unknown_alias_mutating_treated_as_prod (tests.test_gate.FailClosed.test_unknown_alias_mutating_treated_as_prod) ... ok
+test_unknown_alias_read_passes (tests.test_gate.FailClosed.test_unknown_alias_read_passes) ... ok
+test_hard_block_beats_dry_run (tests.test_gate.HardBlocks.test_hard_block_beats_dry_run) ... ok
+test_hard_blocks_on_every_tier (tests.test_gate.HardBlocks.test_hard_blocks_on_every_tier) ... ok
+test_iam_and_terminate_and_prod_context (tests.test_gate.HardBlocks.test_iam_and_terminate_and_prod_context) ... ok
+test_dev_delete_non_hardblock_warns (tests.test_gate.NonProdPolicy.test_dev_delete_non_hardblock_warns) ... ok
+test_dev_dry_run_passes_quietly (tests.test_gate.NonProdPolicy.test_dev_dry_run_passes_quietly) ... ok
+test_dev_mutating_passes_with_intent_reminder_when_missing (tests.test_gate.NonProdPolicy.test_dev_mutating_passes_with_intent_reminder_when_missing) ... ok
+test_dev_mutating_with_intent_has_no_reminder (tests.test_gate.NonProdPolicy.test_dev_mutating_with_intent_has_no_reminder) ... ok
+test_dev_read_passes (tests.test_gate.NonProdPolicy.test_dev_read_passes) ... ok
+test_staging_scale_passes_with_warning_delete_blocks (tests.test_gate.NonProdPolicy.test_staging_scale_passes_with_warning_delete_blocks) ... ok
+test_aws_mutating_blocked_read_passes (tests.test_gate.ProdPolicy.test_aws_mutating_blocked_read_passes) ... ok
+test_helm_bare_is_unclassified_so_prod (tests.test_gate.ProdPolicy.test_helm_bare_is_unclassified_so_prod) ... ok
+test_intent_line_preserved_in_printed_command (tests.test_gate.ProdPolicy.test_intent_line_preserved_in_printed_command) ... ok
+test_prod_dry_run_passes (tests.test_gate.ProdPolicy.test_prod_dry_run_passes) ... ok
+test_prod_flags_before_verb_still_blocked (tests.test_gate.ProdPolicy.test_prod_flags_before_verb_still_blocked) ... ok
+test_prod_mutating_blocks_and_prints_command (tests.test_gate.ProdPolicy.test_prod_mutating_blocks_and_prints_command) ... ok
+test_prod_read_passes (tests.test_gate.ProdPolicy.test_prod_read_passes) ... ok
+test_prod_rollout_restart_and_unlisted_looking_verbs (tests.test_gate.ProdPolicy.test_prod_rollout_restart_and_unlisted_looking_verbs) ... ok
+
+----------------------------------------------------------------------
+Ran 30 tests in 4.330s
+
+OK
+[exit=0]</code></pre>
+<h2 id="prod-mutating-exit-2-command-printed">4.2 PROD + mutating: exit
+2, command printed</h2>
+<pre><code>$ echo &#39;{&quot;tool_input&quot;:{&quot;command&quot;:&quot;kprod scale deploy x --replicas=1 -n y&quot;}}&#39; | bash hooks/k8s_gate.sh
+[k8s-gate] BLOCKED: mutating op on PROD (kprod) not allowed via agent.
+[k8s-gate] Policy: read-only. Generate the command for a human to run.
+[k8s-gate] Command for a human to run:
+[k8s-gate] -&gt; kprod scale deploy x --replicas=1 -n y
+[k8s-gate] INTENT MISSING: add &#39;# INTENT: &lt;what you saw, what you conclude, expected effect&gt;&#39; before this command; audit will record reasoning: null.
+[exit=2]</code></pre>
+<h2 id="b-unknown-alias-mutating-treated-as-prod">4.2b unknown alias +
+mutating: treated as PROD</h2>
+<pre><code>$ echo &#39;{&quot;tool_input&quot;:{&quot;command&quot;:&quot;kmystery scale deploy x --replicas=1&quot;}}&#39; | bash hooks/k8s_gate.sh
+[k8s-gate] BLOCKED: unclassified alias (kmystery), treated as PROD: mutating op not allowed via agent.
+[k8s-gate] Policy: read-only. Generate the command for a human to run.
+[k8s-gate] Add the alias to config/env_map.yaml if it should be less restricted.
+[k8s-gate] Command for a human to run:
+[k8s-gate] -&gt; kmystery scale deploy x --replicas=1
+[k8s-gate] INTENT MISSING: add &#39;# INTENT: &lt;what you saw, what you conclude, expected effect&gt;&#39; before this command; audit will record reasoning: null.
+[exit=2]</code></pre>
+<h2 id="c-hard-block-on-dev">4.2c hard block on dev</h2>
+<pre><code>$ echo &#39;{&quot;tool_input&quot;:{&quot;command&quot;:&quot;kdev delete ns foo&quot;}}&#39; | bash hooks/k8s_gate.sh
+[k8s-gate] BLOCKED (hard-block: delete-namespace): not allowed via agent on any tier (kdev). Run it manually.
+[k8s-gate] Command for a human to run:
+[k8s-gate] -&gt; kdev delete ns foo
+[exit=2]</code></pre>
+<h2 id="d-dev-read-only-passes">4.2d DEV read-only passes</h2>
+<pre><code>$ echo &#39;{&quot;tool_input&quot;:{&quot;command&quot;:&quot;kdev get pods -n x&quot;}}&#39; | bash hooks/k8s_gate.sh
+[exit=0]</code></pre>
+<h2 id="e-dev-mutating-without-intent-reminder-still-allowed">4.2e dev
+mutating without INTENT: reminder, still allowed</h2>
+<pre><code>$ echo &#39;{&quot;tool_input&quot;:{&quot;command&quot;:&quot;kdev scale deploy x --replicas=2&quot;}}&#39; | bash hooks/k8s_gate.sh
+[k8s-gate] INTENT MISSING: add &#39;# INTENT: &lt;what you saw, what you conclude, expected effect&gt;&#39; before this command; audit will record reasoning: null.
+[k8s-gate] VERIFY after: kubectl rollout status &lt;resource&gt; &amp;&amp; kubectl get &lt;resource&gt;
+[exit=0]</code></pre>
+<h2 id="f-prod-dry-run-passes">4.2f prod dry-run passes</h2>
+<pre><code>$ echo &#39;{&quot;tool_input&quot;:{&quot;command&quot;:&quot;kprod apply -f x.yaml --dry-run=server&quot;}}&#39; | bash hooks/k8s_gate.sh
+[k8s-gate] PROD (kprod): --dry-run detected, plan only.
+[exit=0]</code></pre>
+<h2 id="g-audit-pair-in-a-temp-dir">4.2g audit pair in a temp dir</h2>
+<pre><code>$ D=$(mktemp -d); P=&quot;{\&quot;session_id\&quot;:\&quot;demo\&quot;,\&quot;tool_input\&quot;:{\&quot;command\&quot;:\&quot;# INTENT: demo scale in dev
+kdev scale deploy x --replicas=2\&quot;},\&quot;tool_response\&quot;:{\&quot;stdout\&quot;:\&quot;scaled\&quot;}}&quot;; echo &quot;$P&quot; | AGENTS_AUDIT_DIR=$D bash hooks/audit_pre.sh; echo &quot;$P&quot; | AGENTS_AUDIT_DIR=$D bash hooks/audit_log.sh; cat $D/*.jsonl
+[audit] Gate 4: verify the change now (rollout status / get / helm status). If verification fails or is ambiguous, stop and report.
+{&quot;timestamp&quot;: &quot;2026-10-23T16:27:05Z&quot;, &quot;phase&quot;: &quot;pre&quot;, &quot;op_id&quot;: &quot;f698ae74b281&quot;, &quot;session_id&quot;: &quot;demo&quot;, &quot;cwd&quot;: &quot;unknown&quot;, &quot;command&quot;: &quot;# INTENT: demo scale in dev\nkdev scale deploy x --replicas=2&quot;, &quot;fingerprint&quot;: &quot;cb3fcce30d94&quot;, &quot;reasoning&quot;: &quot;demo scale in dev&quot;, &quot;decision&quot;: {&quot;action&quot;: &quot;allow&quot;, &quot;tier&quot;: &quot;dev&quot;, &quot;mutating&quot;: true, &quot;hard_block&quot;: null, &quot;unknown_alias&quot;: false}}
+{&quot;timestamp&quot;: &quot;2026-10-23T16:27:05Z&quot;, &quot;phase&quot;: &quot;post&quot;, &quot;op_id&quot;: &quot;f698ae74b281&quot;, &quot;session_id&quot;: &quot;demo&quot;, &quot;cwd&quot;: &quot;unknown&quot;, &quot;command&quot;: &quot;# INTENT: demo scale in dev\nkdev scale deploy x --replicas=2&quot;, &quot;fingerprint&quot;: &quot;cb3fcce30d94&quot;, &quot;stdout&quot;: &quot;scaled&quot;, &quot;stderr&quot;: &quot;&quot;, &quot;verify_required&quot;: true}
+[exit=0]</code></pre>
+<h2 id="check_rules-openspec-validate">4.3 check_rules + openspec
+validate</h2>
+<pre><code>$ python3 tools/check_rules.py; openspec validate c0002-deterministic-gates
+legacy leak hits (reported, not modified): 36 lines in 11 files
+check_rules: OK
+Change &#39;c0002-deterministic-gates&#39; is valid
+[exit=0]</code></pre>
+</body>
+</html>
