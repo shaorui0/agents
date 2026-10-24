@@ -38,3 +38,9 @@ knowledge/            方法论层
 ## 不在这里的东西
 
 真实事故写作（cases/、runbooks/）、运行时工具与审计日志（tools/）、调查记录（records/）都没有发布。它们含具体的生产环境信息与客户标识。这个仓库只发结构与方法。
+
+## Progress
+
+| Change | Date | What | Takeaway | Links |
+|---|---|---|---|---|
+| c0001-requirements-and-method | 2026-10-24 | Model (METHOD), requirements and data boundary, change-loop skill, leak-scan tool | Label every safety claim enforced or advised; only an exit code is safety | [report](reports/0001-requirements-and-method.html) · [note](notes/blog/0001-requirements-and-method.md) |
