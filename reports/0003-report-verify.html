@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>c0003 report-verify</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">c0003 report-verify</h1>
+</header>
+<h1 id="c0003-report-verify">c0003 report-verify</h1>
+<h2 id="what-changed">What changed</h2>
+<ul>
+<li><code>tools/verify.py</code>: exit-code gate for a triage
+<code>report.md</code>. S1 required sections, E1/E2 evidence chain
+(every conclusion cites <code>[E&lt;n&gt;]</code>, every id defined in
+the log), E3 evidence has timestamp and query, A1/A2 Slack reply has no
+over-assertion and hedges, O1/O2 every mutating command has
+<code># INTENT:</code> and awaits approval. Exit 0 PASS, 1 WARN, 2
+FAIL.</li>
+<li><code>fixtures/report_ok.md</code> and
+<code>fixtures/report_bad.md</code>: synthetic reports; ok exits 0, bad
+exits 2 and names every defect class.</li>
+<li><code>tests/test_verify.py</code>: 11 tests, including single-edit
+mutations of the ok fixture.</li>
+<li>README reorganized: one line, Quickstart, How I think (8 rows),
+layout, Progress, License.</li>
+</ul>
+<h2 id="why">Why</h2>
+<p>“Evidence-backed” and “no over-assertion” were prompt advice. An exit
+code turns each real oncall into an eval run, and a pass-rate over
+reports shows whether the skill is decaying.</p>
+<h2 id="design-decisions">Design decisions</h2>
+<ul>
+<li><strong>The verifier reuses the Gate 3 classifier</strong> to decide
+which commands are mutating. A second regex list in
+<code>verify.py</code> would drift from the gate; one source means a
+command the gate would block is a command that needs INTENT.</li>
+<li><strong>Three levels.</strong> FAIL blocks sending. WARN means
+review. Missing timestamp is a warning, a dangling evidence id is a
+failure: the first is sloppy, the second is a conclusion with no
+support.</li>
+<li><strong>Mutation-style tests.</strong> Instead of many fixtures,
+each test edits one thing in the ok fixture and asserts the specific
+code reacts. Failures point at the check that broke.</li>
+</ul>
+<h2 id="result">Result</h2>
+<p>48 tests green in total; <code>make verify</code> passes (ok gives 0,
+bad gives 2). The README Quickstart commands were run and their output
+is in the evidence.</p>
+<h2 id="evidence">Evidence</h2>
+<p>Raw output from
+<code>openspec/changes/c0003-report-verify/evidence.md</code>.</p>
+<h2 id="a-make-test">3.1a make test</h2>
+<pre><code>$ make test
+python3 -m unittest discover -s tools -p &#39;test_*.py&#39;
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+OK
+python3 -W ignore -m unittest discover -s tests -t . -p &#39;test_*.py&#39;
+................................................
+----------------------------------------------------------------------
+Ran 48 tests in 5.412s
+
+OK
+[exit=0]</code></pre>
+<h2 id="b-verify-tests-verbose">3.1b verify tests verbose</h2>
+<pre><code>$ python3 -m unittest tests.test_verify -v
+test_bad_report_exits_2_with_every_defect_named (tests.test_verify.Fixtures.test_bad_report_exits_2_with_every_defect_named) ... ok
+test_json_output (tests.test_verify.Fixtures.test_json_output) ... ok
+test_ok_report_exits_0 (tests.test_verify.Fixtures.test_ok_report_exits_0) ... ok
+test_unreadable_file_exits_2 (tests.test_verify.Fixtures.test_unreadable_file_exits_2) ... ok
+test_dangling_reference_is_fail (tests.test_verify.Mutations.test_dangling_reference_is_fail) ... ok
+test_hedged_root_cause_is_allowed (tests.test_verify.Mutations.test_hedged_root_cause_is_allowed) ... ok
+test_missing_intent_on_mutating_is_fail (tests.test_verify.Mutations.test_missing_intent_on_mutating_is_fail) ... ok
+test_missing_links_section_is_fail (tests.test_verify.Mutations.test_missing_links_section_is_fail) ... ok
+test_missing_timestamp_is_warn_exit_1 (tests.test_verify.Mutations.test_missing_timestamp_is_warn_exit_1) ... ok
+test_unhedged_slack_is_fail (tests.test_verify.Mutations.test_unhedged_slack_is_fail) ... ok
+test_unknown_alias_does_not_change_intent_check (tests.test_verify.Mutations.test_unknown_alias_does_not_change_intent_check) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.324s
+
+OK
+[exit=0]</code></pre>
+<h2 id="c-ok-fixture-expect-exit-0">3.1c ok fixture (expect exit 0)</h2>
+<pre><code>$ python3 tools/verify.py fixtures/report_ok.md
+PASS
+[exit=0]</code></pre>
+<h2 id="d-bad-fixture-expect-exit-2">3.1d bad fixture (expect exit
+2)</h2>
+<pre><code>$ python3 tools/verify.py fixtures/report_bad.md
+FAIL [S1] missing required section: extracted signals
+FAIL [S1] missing required section: links
+WARN [E3] E1: no timestamp (use YYYY-MM-DDTHH:MMZ)
+WARN [E3] E1: no query or command in backticks
+WARN [E3] E2: no timestamp (use YYYY-MM-DDTHH:MMZ)
+FAIL [E1] conclusion without evidence reference: &quot;The root cause is the last deploy.&quot;
+FAIL [E2] E9 cited but not defined in Investigation Log
+FAIL [A1] over-assertion in Slack Response: &#39;definitely&#39;
+FAIL [A1] over-assertion in Slack Response: &#39;clearly&#39;
+FAIL [A1] over-assertion in Slack Response: scope &#39;all users/customers&#39;
+FAIL [A1] over-assertion in Slack Response: &#39;root cause is&#39; without hedge
+WARN [A2] Slack Response has no hedging language (consistent with / evidence suggests / unknown)
+FAIL [O1] mutating command without &#39;# INTENT:&#39;: kprod scale deploy/checkout-api --replicas=1 -n shop
+WARN [O2] mutating commands present but section does not say they await approval
+FAIL (do not send)
+[exit=2]</code></pre>
+<h2 id="e-make-verify">3.1e make verify</h2>
+<pre><code>$ make verify
+python3 tools/verify.py fixtures/report_ok.md
+PASS
+FAIL [S1] missing required section: extracted signals
+FAIL [S1] missing required section: links
+WARN [E3] E1: no timestamp (use YYYY-MM-DDTHH:MMZ)
+WARN [E3] E1: no query or command in backticks
+WARN [E3] E2: no timestamp (use YYYY-MM-DDTHH:MMZ)
+FAIL [E1] conclusion without evidence reference: &quot;The root cause is the last deploy.&quot;
+FAIL [E2] E9 cited but not defined in Investigation Log
+FAIL [A1] over-assertion in Slack Response: &#39;definitely&#39;
+FAIL [A1] over-assertion in Slack Response: &#39;clearly&#39;
+FAIL [A1] over-assertion in Slack Response: scope &#39;all users/customers&#39;
+FAIL [A1] over-assertion in Slack Response: &#39;root cause is&#39; without hedge
+WARN [A2] Slack Response has no hedging language (consistent with / evidence suggests / unknown)
+FAIL [O1] mutating command without &#39;# INTENT:&#39;: kprod scale deploy/checkout-api --replicas=1 -n shop
+WARN [O2] mutating commands present but section does not say they await approval
+FAIL (do not send)
+[exit=0]</code></pre>
+<h2 id="check_rules-openspec-validate">3.2 check_rules + openspec
+validate</h2>
+<pre><code>$ python3 tools/check_rules.py; openspec validate c0003-report-verify
+legacy leak hits (reported, not modified): 36 lines in 11 files
+check_rules: OK
+Change &#39;c0003-report-verify&#39; is valid
+[exit=0]</code></pre>
+<h2 id="readme-quickstart-step-2-copied-from-readme">README Quickstart
+step 2 (copied from README)</h2>
+<pre><code>$ echo &#39;{&quot;tool_input&quot;:{&quot;command&quot;:&quot;kprod scale deploy x --replicas=1 -n y&quot;}}&#39; | bash hooks/k8s_gate.sh
+[k8s-gate] BLOCKED: mutating op on PROD (kprod) not allowed via agent.
+[k8s-gate] Policy: read-only. Generate the command for a human to run.
+[k8s-gate] Command for a human to run:
+[k8s-gate] -&gt; kprod scale deploy x --replicas=1 -n y
+[k8s-gate] INTENT MISSING: add &#39;# INTENT: &lt;what you saw, what you conclude, expected effect&gt;&#39; before this command; audit will record reasoning: null.
+[exit=2]</code></pre>
+</body>
+</html>
