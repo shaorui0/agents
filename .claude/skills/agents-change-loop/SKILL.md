@@ -1,0 +1,34 @@
+---
+name: agents-change-loop
+description: 本仓库每个改动的固定闭环：OpenSpec change → 实现 → 验收 → HTML 报告 + 博客笔记 → 一个 commit。用户说「做下一个 change」「按 loop 走」「提交这个改动」，或在本仓库开始任何代码/文档改动时使用。
+---
+
+# agents-change-loop
+
+一个 change = 一个 OpenSpec change = **按阶段的若干个 commit**（不一把梭哈）。没有验收证据的 change 不算完成。
+
+## 步骤
+
+1. **开 change**：`openspec new change c<NNNN>-<slug>`（OpenSpec 要求字母开头，所以加 `c`；编号四位递增，看 `reports/` 最大号 +1）。写 proposal / tasks；tasks 里必须有一条「验收」，写明用什么命令或 eval 证明做完。
+2. **实现**：只改 tasks 里列的东西。
+3. **验收**：跑 tasks 里的验收命令，把输出原样存到 `openspec/changes/<id>/evidence.md`。失败就回到 2，不往下走。
+4. **HTML 报告**：`reports/<NNNN-slug>.html`。内容：改了什么、为什么、验收证据、前后对比（有 eval 时给指标）。本地 HTML 文件，不发 Claude artifact。可以先写 md 再 `pandoc -s --metadata title=<slug> in.md -o reports/<NNNN-slug>.html`。
+5. **博客笔记**：`notes/blog/<NNNN-slug>.md`。只列核心想法、踩的坑、反直觉的结论，bullet 即可，**不做写作润色**。
+6. **按阶段提交**：每个阶段做完就 commit，只 `git add` 该阶段的文件（不用 `-A`）。message 首行 `c<NNNN>-<slug> [k/n <阶段>]: <一句话>`：
+   - `proposal`：proposal.md（为什么）
+   - `spec+tasks`：specs/、tasks.md（做成什么样、怎么验收）
+   - `impl`：代码 / 配置（可拆多个 impl commit，每个能独立通过单测）
+   - `docs`：文档、README、skill
+   - `acceptance`：evidence.md + HTML 报告 + 博客笔记 + **README `## Progress` 表追加一行**（Change / Date / What / Takeaway 取博客笔记第一条 / 报告与笔记链接），正文列验收结论
+   没有的阶段跳过，n 按实际阶段数算。
+7. **汇报验收**：在 main agent 里把验收结果告诉用户——通过/失败、关键输出、HTML 报告路径。没汇报不算做完。
+8. 完成后 `openspec archive <id>`（可与下一个 change 一起做）。
+
+## 硬规则
+
+- 给用户看的 markdown 同时出 HTML。
+- 公司数据（集群别名、环境映射、内部域名、客户名、工单号、审计日志）不进仓库；提交前 `python3 tools/check_rules.py` 必须 OK，再 `git diff --cached` 扫一遍。
+- 旧文件（base commit 之前已公开的 knowledge/ facets/ skills/）不改写；泄漏扫描命中只列出，不动。
+- commit 末尾加 `Co-Authored-By` 行；只 `git add` 具体文件。
+- 报告里的每个数字要能指回 evidence 或数据行。
+- 涉及变更类命令（kubectl/helm/aws 写操作）的 change 必须在 proposal 写明经过哪几道 gate 和回滚。
