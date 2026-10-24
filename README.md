@@ -1,43 +1,81 @@
 # agents
 
-一个 SRE on-call 分诊 agent，做成 Claude Code skill。告警进去，结构化调查出来。
+An SRE oncall triage agent built as a Claude Code skill: an alert goes in, a structured investigation comes out, and every irreversible action stays behind a deterministic gate.
 
-## 这里有什么
+## Quickstart
 
-```
-SKILL.md              入口：Layer 0 信号提取 → 路由到具体 type skill
-ARCHITECTURE.md       分层结构与状态流转
-facets/               外部接口的抽象面（告警接入、信号提取、状态库、流量接口）
-skills/               可复用的子能力
-  sre-oncall-init             建工作目录、提取信号、路由
-  sre-oncall-quick-check      快相：先止血还是先定位
-  sre-oncall-query-safety     查询安全规则（label filter / step floor / time ceiling）
-  sre-oncall-output-format    输出契约
-  sre-oncall-acceptance-criteria  什么算调查完成
-  sre-oncall-compound-learning    调查结束后的知识写回
-  workflow-oncall-spike       延迟毛刺的两阶段 triage
-knowledge/            方法论层
-  patterns/           反复出现的失败形态
-  debug-trees/        分层诊断树
-  checklists/         固定核对项
-  mitigations/        止血动作，按可逆性分级
-  cards/              速查卡
-  references/         术语、分类法、查询模板
+No cluster, credentials or network needed.
+
+```bash
+git clone https://github.com/shaorui0/agents.git && cd agents
+
+# 1. run the tests (Gate 3, audit trail, report verifier)
+make test
+
+# 2. see Gate 3 block a production mutation (exit 2, command printed for a human)
+echo '{"tool_input":{"command":"kprod scale deploy x --replicas=1 -n y"}}' | bash hooks/k8s_gate.sh; echo "exit=$?"
+
+# 3. check a triage report: ok fixture exits 0, bad fixture exits 2
+python3 tools/verify.py fixtures/report_ok.md
+python3 tools/verify.py fixtures/report_bad.md
+make verify
 ```
 
-## 设计立场
+Install the hooks in Claude Code: copy the `hooks` and `permissions` blocks from `.claude/settings.example.json` into your `settings.json`, set `$REPO` to this checkout, and replace the example aliases in `config/env_map.yaml` (`kdev` dev, `kstage` staging, `kprod` prod) with your own. An alias that is not in the map is treated as production. Audit records go to `records/audit/` (override with `AGENTS_AUDIT_DIR`).
 
-**自主权绑定在动作的可逆性上。** 幂等可表达是必要条件，撤回成本是充分条件。据此把动作分成三档：秒级在线可撤回、撤回需要一次中断、撤回不存在。只有第一档允许 agent 直接给出命令，第三档永不给。
+## How I think about it
 
-**actuator 的输出是命题，不是状态变更。** 这条让调查路径可以放开：agent 输出的是「我认为是什么、建议怎么做」，执行留给人。生产侧保持只读。
+| Question | Answer |
+|---|---|
+| **What is the binding constraint?** | Context, not the model. Context is scarce RAM, not an infinite disk. The main agent keeps navigation, judgment and command generation; raw data fetching goes to a subagent that returns at most 500 tokens. |
+| **What are the primitives?** | Four controls, not roles: Spec (declared end-state), Loop (observe, compare, act, verify), Hook (admission control), Fork (context isolation). See `docs/METHOD.md`. |
+| **How does it avoid anchoring on the last deploy?** | Phase lock. In phase A the agent cannot read deploy history, so it cannot confabulate one. A to B needs a non-empty hypothesis with at least one verified. |
+| **Where does safety live?** | In deterministic code. The model judges; a hook that returns `exit 2` owns every irreversible action. "It is fine if the model misbehaves." |
+| **What stops a bad command?** | Four gates: user approval, `settings.json` allow/deny, the Gate 3 hook (fail-closed alias tiers, hard blocks, PROD plus mutating exits 2), mandatory post-change verification. |
+| **How do I know a report is good?** | `tools/verify.py` returns an exit code: required sections, an evidence chain per conclusion, no over-assertion in the Slack reply, INTENT on every mutating command. |
+| **Does it get better with use?** | Yes, through delta judgment: matches update an existing file, a new root-cause path creates a case, a new signal updates the routing table. AI-written notes stay `draft` until a human promotes them, and carry `derived_from`. |
+| **What is enforced and what is advice?** | `docs/METHOD.md` marks every rule. Gate 3, the audit hooks and `verify.py` are code with tests; the rest is prompt contract. |
 
-**上下文按层次固定，不按时间滑动。** 原始指标与日志检索推进子 agent，主循环只收结构化摘要，判断留在主循环里。
+### Design stance
 
-**知识随每次调查复利。** 每次调查结束后把增量写回 knowledge/，下一次调查先检索再动手。
+**Autonomy is bound to reversibility.** Idempotent expressibility is necessary, undo cost is sufficient. Actions fall into three classes: online undo in seconds, undo that needs an interruption, and no undo. Only the first class may be given to the agent as a command; the third is never given.
 
-## 不在这里的东西
+**Actuator output is a proposition, not a state change.** The agent outputs "what I think it is and what to do"; a human executes. Production stays read-only for the agent, which is what lets the investigation path be wide open.
 
-真实事故写作（cases/、runbooks/）、运行时工具与审计日志（tools/）、调查记录（records/）都没有发布。它们含具体的生产环境信息与客户标识。这个仓库只发结构与方法。
+**Context is fixed by layer, not slid by time.** Raw metric and log retrieval is pushed to subagents; the main loop receives structured summaries and keeps the judgment.
+
+**Knowledge compounds with every investigation.** The delta is written back to `knowledge/`; the next investigation retrieves first, then acts.
+
+## Repo layout
+
+```
+SKILL.md              entry: Layer 0 signal extraction -> route to a type skill
+ARCHITECTURE.md       layering and state flow
+facets/               abstract surfaces for external interfaces (alert intake, signal extraction, state store, traffic)
+skills/               reusable sub-capabilities
+  sre-oncall-init             create working dir, extract signals, route
+  sre-oncall-quick-check      fast phase: stop the bleeding or locate first
+  sre-oncall-query-safety     query safety rules (label filter / step floor / time ceiling)
+  sre-oncall-output-format    output contract
+  sre-oncall-acceptance-criteria  what counts as a finished investigation
+  sre-oncall-compound-learning    write-back after an investigation
+  workflow-oncall-spike       two-phase triage for latency spikes
+knowledge/            method layer
+  patterns/ debug-trees/ checklists/ mitigations/ cards/ references/
+hooks/                k8s_gate.sh (Gate 3), audit_pre.sh, audit_log.sh
+config/env_map.yaml   example alias -> tier map, hard blocks, verbs (fail-closed default)
+tools/                verify.py (report gate), check_rules.py (leak scan, doc shape, commit subjects)
+fixtures/             synthetic report_ok.md / report_bad.md
+tests/                gate, audit and verifier tests
+docs/                 METHOD.md (the model), REQUIREMENTS.md (requirements, data boundary)
+openspec/changes/     one change per feature: proposal, specs, tasks, evidence
+reports/ notes/blog/  per-change HTML report and blog notes
+.claude/              skills/agents-change-loop, settings.example.json
+```
+
+## Not published
+
+The full-fidelity incident write-ups (top-level `cases/`, `runbooks/`), runtime tools with audit logs, and investigation records (`records/`) are not published: they contain concrete production details and customer identifiers. `knowledge/cases/` and `knowledge/runbooks/` hold the earlier, already-public sanitized material; a leak scan over it found residual internal identifiers, listed in `openspec/changes/c0001-requirements-and-method/evidence.md` and deliberately left unedited by this work. This repository otherwise ships structure, method, gates and tests. See the data boundary in `docs/REQUIREMENTS.md`.
 
 ## Progress
 
@@ -45,3 +83,7 @@ knowledge/            方法论层
 |---|---|---|---|---|
 | c0001-requirements-and-method | 2026-10-24 | Model (METHOD), requirements and data boundary, change-loop skill, leak-scan tool | Label every safety claim enforced or advised; only an exit code is safety | [report](reports/0001-requirements-and-method.html) · [note](notes/blog/0001-requirements-and-method.md) |
 | c0002-deterministic-gates | 2026-10-24 | Gate 3 (`k8s_gate`) with fail-closed tiers and hard blocks, audit pre/post pair, settings example, 37 tests | The gate is the one layer the model cannot negotiate with; fail-closed is a default, not a feature | [report](reports/0002-deterministic-gates.html) · [note](notes/blog/0002-deterministic-gates.md) |
+
+## License
+
+MIT, see `LICENSE`. Copyright (c) 2026 Rui Shao.
