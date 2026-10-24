@@ -21,6 +21,10 @@ class ScanText(unittest.TestCase):
         pats = [re.compile(p) for p in cr.PUBLIC_LEAKS]
         self.assertEqual(cr.scan_text("see /" + "Users" + "/someone/x", pats), [1])
 
+    def test_cluster_name_flagged(self):
+        pats = [re.compile(p) for p in cr.PUBLIC_LEAKS]
+        self.assertEqual(cr.scan_text("cluster " + "aws-" + "uswest2-prod-a", pats), [1])
+
     def test_subject_format(self):
         self.assertTrue(cr.SUBJECT_RE.match("c0001-requirements-and-method [3/5 docs]: text"))
         self.assertTrue(cr.SUBJECT_RE.match("c0002-deterministic-gates [4/6 spec+tasks]: text"))

@@ -5,13 +5,10 @@ Checks:
   1. required files exist
   2. docs/METHOD.md has >= 2 mermaid blocks and the step / failure-mode tables
   3. docs/REQUIREMENTS.md has a data-boundary section
-  4. pre-existing public content (knowledge/, facets/, skills/, SKILL.md,
-     ARCHITECTURE.md) was not modified or deleted since the base commit
-  5. every commit after the base commit has subject
+  4. every commit after the root commit has subject
      `c<NNNN>-<slug> [k/n <stage>]: <text>` (merge commits excepted)
-  6. leak scan: files ADDED after the base commit must have zero hits.
-     Legacy files (already public at the base commit) are scanned and
-     reported, never edited. Use --list-legacy to print file:line.
+  5. leak scan over EVERY text file, no exemptions: any hit fails.
+     (--list-legacy is kept for compatibility and prints the legacy hit count, now always 0.)
 
 Leak patterns = generic public ones below + private ones from
 `.leak_patterns.local` (one regex per line, gitignored, so the repo never
@@ -25,18 +22,17 @@ import subprocess
 import sys
 from pathlib import Path
 
-BASE = "9268df3"
 REQUIRED = [
     "README.md", "LICENSE", "docs/METHOD.md", "docs/REQUIREMENTS.md",
     ".claude/skills/agents-change-loop/SKILL.md", "tools/check_rules.py",
 ]
-PROTECTED = ["knowledge", "facets", "skills", "SKILL.md", "ARCHITECTURE.md"]
 SUBJECT_RE = re.compile(r"^c\d{4}-[a-z0-9-]+ \[\d+/\d+ [a-z+]+\]: \S.*")
 PUBLIC_LEAKS = [
     r"(?<![\w.-])\d{12}(?![\w.])",  # 12-digit account id (all-same-digit placeholders allowed)
     r"AKIA[0-9A-Z]{16}",           # AWS access key id
     r"/Users/[A-Za-z0-9_.-]+/",    # local home paths
     r"hooks\.slack\.com/services/", # webhook url
+    r"aws-(us|ca|eu|ap)[a-z]+[0-9]-", # real cloud cluster names
 ]
 SKIP_DIRS = {".git", "__pycache__", "node_modules", ".venv"}
 TEXT_EXT = {".md", ".py", ".json", ".yaml", ".yml", ".html", ".txt", ".sh", ".toml", ".jsonl", ""}
@@ -91,22 +87,15 @@ def check(root, list_legacy=False):
     if req.exists() and "Data boundary" not in req.read_text():
         errors.append("docs/REQUIREMENTS.md: missing data boundary section")
 
-    rc, _ = git(root, "rev-parse", "--verify", "-q", BASE)
-    legacy = set()
-    if rc == 0:
-        _, out = git(root, "ls-tree", "-r", "--name-only", BASE)
-        legacy = {p for p in out.split("\n") if p}
-        _, changed = git(root, "diff", "--name-only", BASE, "--", *PROTECTED)
-        for p in changed.split("\n"):
-            if p:
-                errors.append(f"legacy public file modified since base: {p}")
-        _, subjects = git(root, "log", "--no-merges", "--format=%s", f"{BASE}..HEAD")
+    rc, out = git(root, "rev-list", "--max-parents=0", "HEAD")
+    roots = out.split()
+    if rc == 0 and len(roots) == 1:
+        _, subjects = git(root, "log", "--no-merges", "--format=%s", f"{roots[0]}..HEAD")
         for s in subjects.split("\n"):
             if s and not SUBJECT_RE.match(s):
                 errors.append(f"commit subject not in c<NNNN>-<slug> [k/n stage]: form: {s[:70]}")
 
     pats = leak_patterns(root)
-    legacy_hits = []
     for f in repo_files(root):
         rel = str(f.relative_to(root))
         if f.suffix not in TEXT_EXT or not f.is_file() or f.name == ".leak_patterns.local":
@@ -115,17 +104,11 @@ def check(root, list_legacy=False):
             text = f.read_text()
         except UnicodeDecodeError:
             continue
-        lines = scan_text(text, pats)
-        for ln in lines:
-            if rel in legacy:
-                legacy_hits.append(f"{rel}:{ln}")
-            else:
-                errors.append(f"leak pattern in {rel}:{ln}")
-    if legacy_hits:
-        files = {h.rsplit(":", 1)[0] for h in legacy_hits}
-        info.append(f"legacy leak hits (reported, not modified): {len(legacy_hits)} lines in {len(files)} files")
-        if list_legacy:
-            info += [f"  LEGACY {h}" for h in legacy_hits]
+        for ln in scan_text(text, pats):
+            errors.append(f"leak pattern in {rel}:{ln}")
+    if list_legacy:
+        info.append("legacy leak hits: 0 (no exemptions; all files scanned)" if not any(e.startswith("leak pattern") for e in errors)
+                    else "legacy leak hits: see FAIL lines (no exemptions)")
     return errors, info
 
 
