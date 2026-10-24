@@ -1,0 +1,67 @@
+# Gate 3 configuration. EXAMPLE aliases only: replace with your own, keep the file out of public repos.
+#
+# Fail-closed: any infra command whose alias is not listed under `aliases`
+# is treated as `default_tier` (prod).
+
+default_tier: prod
+
+# commands that are always "infra" (bare tools have no environment, so they get default_tier)
+tool_prefixes: [kubectl, helm, aws, eksctl]
+
+# first-token shapes that look like a cluster alias (k + letters/digits); anything matching and not listed below is "unclassified"
+alias_regex: '^k[a-z0-9]+$'
+
+# words that match alias_regex but are not cluster aliases
+ignore_commands: [kill, killall, kind, kustomize, kubectx, kubens, k9s, kubeconform, kubeval]
+
+# alias -> tier (dev | staging | prod). Unknown tier values are treated as prod.
+aliases:
+  kdev: dev
+  kstage: staging
+  kprod: prod
+
+# kubectl / helm verbs that change state (the first non-flag token after the tool)
+mutating_verbs:
+  - apply
+  - create
+  - delete
+  - del
+  - scale
+  - patch
+  - drain
+  - cordon
+  - uncordon
+  - taint
+  - exec
+  - cp
+  - run
+  - set
+  - replace
+  - edit
+  - annotate
+  - label
+  - autoscale
+  - expose
+  - upgrade
+  - install
+  - uninstall
+  - rollback
+
+# `kubectl rollout <sub>`: only these subcommands mutate
+rollout_mutating: [restart, undo, pause, resume]
+
+# `aws <service> <operation>`: operation starts with one of these
+aws_mutating_prefixes: [create, delete, put, update, modify, terminate, stop, start, attach, detach, associate, disassociate, register, deregister, revoke, authorize, run, reboot, remove, add, set, invoke, rm, cp, mv, sync]
+
+# flags that consume the next token as a value (so `-n ns scale` finds the verb `scale`)
+value_flags: [-n, --namespace, --context, --kubeconfig, --cluster, --user, -s, --server, --request-timeout, --as, --profile, --region]
+
+# Hard blocks: checked on every tier, even with --dry-run. name: regex over the normalized command.
+hard_blocks:
+  delete-namespace: '\b(delete|del)\s+(ns|namespaces?)\b'
+  delete-persistent-volume: '\b(delete|del)\s+(pv|pvc|persistentvolumes?|persistentvolumeclaims?)\b'
+  delete-all: '\b(delete|del)\b.*\s--all(\s|=|$)'
+  delete-all-namespaces: '\b(delete|del)\b.*(\s--all-namespaces|\s-A)(\s|=|$)'
+  iam-mutation: '^aws\s+iam\s+(create|delete|attach|detach|put|add|remove|update)'
+  instance-terminate: '^aws\s+ec2\s+(terminate-instances|stop-instances)'
+  explicit-prod-context: '--context[= ](prod|production|prd)(\s|$)'

@@ -4,6 +4,7 @@ PY ?= python3
 
 test:   ## all tests
 	$(PY) -m unittest discover -s tools -p 'test_*.py'
+	$(PY) -W ignore -m unittest discover -s tests -t . -p 'test_*.py'
 
 check:  ## leak scan, required files, doc shape, commit subjects
 	$(PY) tools/check_rules.py
