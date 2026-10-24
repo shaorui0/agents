@@ -18,3 +18,8 @@ sre_oncall_triage_sdk/eval/results/
 # Logs and temp files
 *.log
 excalidraw.log
+.leak_patterns.local
+.DS_Store
+__pycache__/
+records/audit/*.jsonl
+records/audit/.inflight/
